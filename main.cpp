@@ -3,11 +3,11 @@
 int main()
 {
 	vector<string> historia;
-	string wyrazenie;
 	float wynik = 0;
 	int x = 0;
 	while (true)
 	{
+		string wyrazenie;
 		cout << "Wszystkie znaki nalezy wpisywac bez spacji!" << endl;
 		cout << "pierwiastek -> sqrt(liczba)" << endl;
 		cout << "potega -> pow(podstawa,wykladnik)" << endl;
@@ -21,16 +21,14 @@ int main()
 		else
 			cout << "wynik: " << wynik;
 		cin >> wyrazenie;
-		historia.push_back(wyrazenie);
 
 		if (wyrazenie == "history")
 		{
 			system("cls");
-			for (int i = 0; i < historia.size(); i += 2)
+			for (int i = 0; i < historia.size(); i+=2)
 			{
-				if (historia.at(i) != "history" && historia.at(i + 1) != "history")
-					cout << historia.at(i) << "=" << historia.at(i + 1) << endl;
-				if (i == historia.size() - 1)
+				cout << historia.at(i) << "=" << historia.at(i + 1) << endl;
+				if (i == historia.size() - 1 || i == historia.size() - 2)
 					cout << endl;
 			}
 		}
@@ -38,10 +36,12 @@ int main()
 		{
 			wynik = 0;
 			historia.clear();
+			x = 0;
 			system("cls");
 		}
 		else
 		{
+			historia.push_back(wyrazenie);
 			wylicz(wyrazenie, wynik, historia);
 			x = 1;
 			system("cls");

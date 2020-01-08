@@ -220,7 +220,6 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 			}
 			if (array.at(i) == "*")
 			{
-				wynik = 1;
 				if (array.at(i + 1) == "p(" || array.at(i + 1) == "s(")
 				{
 					int j = i + 1;
@@ -260,6 +259,8 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 
 void wylicz(string &wyrazenie, float &wynik, vector<string> &historia)
 {
+	for (auto row : historia)
+		cout << row << endl;
 	string akcja = licz(wyrazenie, wynik)[1];
 	string wartosc = licz(wyrazenie, wynik)[0];
 	if (akcja == "+")
