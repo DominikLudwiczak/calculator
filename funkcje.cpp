@@ -15,7 +15,7 @@ vector<string> split(string &wyrazenie)
 				{
 					if (wyrazenie[j] == 'p' && wyrazenie[j + 1] == 'o' && wyrazenie[j + 2] == 'w')
 					{
-						pom += "p(";
+						pom += "p[";
 						array.push_back(pom);
 						pom = "";
 						check = true;
@@ -23,7 +23,7 @@ vector<string> split(string &wyrazenie)
 					}
 					else if (wyrazenie[j] == 's' && wyrazenie[j + 1] == 'q' && wyrazenie[j + 2] == 'r' && wyrazenie[j + 3] == 't')
 					{
-						pom += "s(";
+						pom += "s[";
 						array.push_back(pom);
 						pom = "";
 						check = true;
@@ -35,12 +35,24 @@ vector<string> split(string &wyrazenie)
 						array.push_back(",");
 						pom = "";
 					}
+					else if (wyrazenie[j] == '(' && check == false)
+					{
+						pom += "(";
+						array.push_back(pom);
+						pom = "";
+						j = i++;
+					}
 					else if (wyrazenie[j] == ')')
 					{
 						array.push_back(pom);
 						pom = "";
-						pom += ")";
-						check = false;
+						if (check == true)
+						{
+							pom += "]";
+							check = false;
+						}
+						else
+							pom += ")";
 					}
 					else
 						pom += wyrazenie[j];
@@ -96,7 +108,7 @@ float* mat(vector<string> &array, int j, float &wynik)
 	{
 		bool num = is_num(array.at(i + 1));
 		bool num2 = true;
-		if(array.at(i)=="p(")
+		if(array.at(i)=="p[")
 			num2 = is_num(array.at(i + 3));
 		if (num == false)
 		{
@@ -111,7 +123,7 @@ float* mat(vector<string> &array, int j, float &wynik)
 		else
 		{
 			float pierwsza = atof(array.at(i + 1).c_str());
-			if (array.at(i) == "p(")
+			if (array.at(i) == "p[")
 			{
 				float druga = atof(array.at(i + 3).c_str());
 				wynik_posredni = pow(pierwsza, druga);
@@ -130,6 +142,31 @@ float* mat(vector<string> &array, int j, float &wynik)
 	return tab;
 }
 
+void nawiasy(vector<string> &array, int i, float &wynik)
+{
+	string wyrazenie;
+	vector<string>::iterator p1 = array.begin();
+	vector<string>::iterator p2 = array.begin();
+	int j = 0;
+	while (j < i)
+	{
+		j++;
+		p1++;
+		p2++;
+	}
+	for (int j = i+1; j < array.size(); j++)
+	{
+		p2++;
+		if (array.at(j) == ")")
+			break;
+		else
+			wyrazenie += array.at(j);
+	}
+	string wynik_posredni = licz(wyrazenie, wynik)[0];
+	array.erase(p1, p2);
+	array.at(i) = wynik_posredni;
+}
+
 string* licz(string &wyrazenie, float &aktualny_wynik)
 {
 	float wynik(0);
@@ -139,11 +176,16 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 	{
 		if (array.at(i) != "+" && array.at(i) != "-" && array.at(i) != "*" && array.at(i) != "/")
 		{
-			if (array.at(i) == "p(" || array.at(i) == "s(")
+			if (array.at(i) == "p[" || array.at(i) == "s[")
 			{
 				wynik = mat(array, i, aktualny_wynik)[1];
 				i = mat(array, i, aktualny_wynik)[0];
 				akcja = "+";
+			}
+			if (array.at(i) == "(")
+			{
+				nawiasy(array, i, aktualny_wynik);
+				i = -1;
 			}
 			else
 			{
@@ -151,104 +193,120 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 				float druga(0);
 				if (i + 2 <= array.size() - 1)
 				{
-					if (array.at(i + 2) == "p(" || array.at(i + 2) == "s(")
+					if (array.at(i + 2) == "p[" || array.at(i + 2) == "s[")
 					{
 						int j = i + 2;
 						druga = mat(array, j, aktualny_wynik)[1];
+					}
+					else if (array.at(i + 2) == "(")
+					{
+						nawiasy(array, i+2, aktualny_wynik);
+						i = -1;
 					}
 					else
 						druga = atof(array.at(i + 2).c_str());
 				}
 				else
 					break;
-				if (array.at(i + 1) == "+")
+				if (i > -1)
 				{
-					wynik = pierwsza + druga; 
-					akcja = "+";
-				}
-				if (array.at(i + 1) == "-")
-				{
-					wynik = druga - pierwsza;
-					akcja = "-";
-				}
-				if (array.at(i + 1) == "*")
-				{
-					wynik = pierwsza * druga;
-					akcja = "*";
-				}
-				if (array.at(i + 1) == "/")
-				{
-					if (druga == 0)
-						cout << "Nie mozna dzielic przez 0!" << endl;
-					else
+					if (array.at(i + 1) == "+")
 					{
-						wynik = pierwsza / druga;
-						akcja = "/";
+						wynik = pierwsza + druga;
+						akcja = "+";
 					}
+					if (array.at(i + 1) == "-")
+					{
+						wynik = druga - pierwsza;
+						akcja = "-";
+					}
+					if (array.at(i + 1) == "*")
+					{
+						wynik = pierwsza * druga;
+						akcja = "*";
+					}
+					if (array.at(i + 1) == "/")
+					{
+						if (druga == 0)
+							cout << "Nie mozna dzielic przez 0!" << endl;
+						else
+						{
+							wynik = pierwsza / druga;
+							akcja = "/";
+						}
+					}
+					i += 2;
 				}
-				i += 2;
 			}
 		}
 		else
 		{
-			float pierwsza;
-			if (array.at(i + 1) != "p(" && array.at(i + 1) != "s(")
-				pierwsza = atof(array.at(i + 1).c_str());
-			if (array.at(i) == "+")
+			if (array.at(i+1) == "(")
 			{
-				if (array.at(i + 1) == "p(" || array.at(i + 1) == "s(")
-				{
-					int j = i + 1;
-					wynik += mat(array, j, aktualny_wynik)[1];
-					i = mat(array, j, aktualny_wynik)[0] - 1;
-				}
-				else
-					wynik += pierwsza;
-				akcja = "+";
+				nawiasy(array, i + 1, aktualny_wynik);
+				i = -1;
 			}
-			if (array.at(i) == "-")
+			else
 			{
-				if (array.at(i + 1) == "p(" || array.at(i + 1) == "s(")
+				float pierwsza;
+				if (array.at(i + 1) != "p[" && array.at(i + 1) != "s[")
+					pierwsza = atof(array.at(i + 1).c_str());
+				if (array.at(i) == "+")
 				{
-					int j = i + 1;
-					wynik = mat(array, j, aktualny_wynik)[1] - wynik;
-					i = mat(array, j, aktualny_wynik)[0] - 1;
-				}
-				else
-					wynik = pierwsza - wynik;
-				akcja = "-";
-			}
-			if (array.at(i) == "*")
-			{
-				if (array.at(i + 1) == "p(" || array.at(i + 1) == "s(")
-				{
-					int j = i + 1;
-					wynik *= mat(array, j, aktualny_wynik)[1];
-					i = mat(array, j, aktualny_wynik)[0] - 1;
-				}
-				else
-					wynik *= pierwsza;
-				akcja = "*";
-			}
-			if (array.at(i) == "/")
-			{
-				wynik = aktualny_wynik;
-				if (array.at(i + 1) == "p(" || array.at(i + 1) == "s(")
-				{
-					int j = i + 1;
-					wynik /= mat(array, j, aktualny_wynik)[1];
-					i = mat(array, j, aktualny_wynik)[0] - 1;
-				}
-				else
-				{
-					if (pierwsza == 0)
-						cout << "Nie mozna dzielic przez 0!" << endl;
+					if (array.at(i + 1) == "p[" || array.at(i + 1) == "s[")
+					{
+						int j = i + 1;
+						wynik += mat(array, j, aktualny_wynik)[1];
+						i = mat(array, j, aktualny_wynik)[0] - 1;
+					}
 					else
-						wynik /= pierwsza;
+						wynik += pierwsza;
+					akcja = "+";
 				}
-				akcja = "/";
+				if (array.at(i) == "-")
+				{
+					if (array.at(i + 1) == "p[" || array.at(i + 1) == "s[")
+					{
+						int j = i + 1;
+						wynik = mat(array, j, aktualny_wynik)[1] - wynik;
+						i = mat(array, j, aktualny_wynik)[0] - 1;
+					}
+					else
+						wynik = pierwsza - wynik;
+					akcja = "-";
+				}
+				if (array.at(i) == "*")
+				{
+					if (array.at(i + 1) == "p[" || array.at(i + 1) == "s[")
+					{
+						int j = i + 1;
+						wynik *= mat(array, j, aktualny_wynik)[1];
+						i = mat(array, j, aktualny_wynik)[0] - 1;
+					}
+					else
+						wynik *= pierwsza;
+					akcja = "*";
+				}
+				if (array.at(i) == "/")
+				{
+					wynik = aktualny_wynik;
+					if (array.at(i + 1) == "p[" || array.at(i + 1) == "s[")
+					{
+						int j = i + 1;
+						wynik /= mat(array, j, aktualny_wynik)[1];
+						i = mat(array, j, aktualny_wynik)[0] - 1;
+					}
+					else
+					{
+						if (pierwsza == 0)
+							cout << "Nie mozna dzielic przez 0!" << endl;
+						else
+							wynik /= pierwsza;
+					}
+					akcja = "/";
+				}
+				i += 1;
 			}
-			i += 1;
 		}
 	}
 	string* tab = new string[2];
@@ -259,8 +317,6 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 
 void wylicz(string &wyrazenie, float &wynik, vector<string> &historia)
 {
-	for (auto row : historia)
-		cout << row << endl;
 	string akcja = licz(wyrazenie, wynik)[1];
 	string wartosc = licz(wyrazenie, wynik)[0];
 	if (akcja == "+")

@@ -44,7 +44,7 @@ int main()
 			historia.push_back(wyrazenie);
 			wylicz(wyrazenie, wynik, historia);
 			x = 1;
-			system("cls");
+			//system("cls");
 		}
 	}
 	return 0;

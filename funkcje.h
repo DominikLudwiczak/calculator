@@ -24,3 +24,6 @@ bool is_num(string str);
 
 //funkcja zamieniaj¹ca wyrazenie na wynik podczas pierwistkowania i potegowania
 void zamiana(vector<string> &array, int i, float &wynik);
+
+//funkcja wyliczaj¹ca wartoœæ z nawiasów
+void nawiasy(vector<string> &array, int i, float &wynik);
