@@ -1,8 +1,10 @@
 #include "funkcje.h"
 
+bool check_minus = false;
 vector<string> split(string &wyrazenie)
 {
 	vector<string> array;
+	int counter = 0;
 	for (int i = 0; i < wyrazenie.length(); i++)
 	{
 		string pom;
@@ -38,6 +40,8 @@ vector<string> split(string &wyrazenie)
 					else if (wyrazenie[j] == '(' && check == false)
 					{
 						pom += "(";
+						counter++;
+						pom += to_string(counter);
 						array.push_back(pom);
 						pom = "";
 						j = i++;
@@ -52,7 +56,11 @@ vector<string> split(string &wyrazenie)
 							check = false;
 						}
 						else
+						{
 							pom += ")";
+							pom += to_string(counter);
+							counter--;
+						}
 					}
 					else
 						pom += wyrazenie[j];
@@ -148,6 +156,9 @@ void nawiasy(vector<string> &array, int i, float &wynik)
 	vector<string>::iterator p1 = array.begin();
 	vector<string>::iterator p2 = array.begin();
 	int j = 0;
+	string counter;
+	for (int j = 1; j < array[i].length(); j++)
+		counter += array.at(i)[j];
 	while (j < i)
 	{
 		j++;
@@ -157,10 +168,18 @@ void nawiasy(vector<string> &array, int i, float &wynik)
 	for (int j = i+1; j < array.size(); j++)
 	{
 		p2++;
-		if (array.at(j) == ")")
+		string w = ")" + counter;
+		if (array.at(j) == w)
 			break;
 		else
-			wyrazenie += array.at(j);
+		{
+			if (array.at(j)[0] == ')')
+				wyrazenie += ")";
+			else if (array.at(j)[0] == '(')
+				wyrazenie += "(";
+			else
+				wyrazenie += array.at(j);
+		}
 	}
 	string wynik_posredni = licz(wyrazenie, wynik)[0];
 	array.erase(p1, p2);
@@ -182,7 +201,7 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 				i = mat(array, i, aktualny_wynik)[0];
 				akcja = "+";
 			}
-			if (array.at(i) == "(")
+			if (array.at(i)[0] == '(')
 			{
 				nawiasy(array, i, aktualny_wynik);
 				i = -1;
@@ -198,7 +217,7 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 						int j = i + 2;
 						druga = mat(array, j, aktualny_wynik)[1];
 					}
-					else if (array.at(i + 2) == "(")
+					else if (array.at(i + 2)[0] == '(')
 					{
 						nawiasy(array, i+2, aktualny_wynik);
 						i = -1;
@@ -217,7 +236,10 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 					}
 					if (array.at(i + 1) == "-")
 					{
-						wynik = druga - pierwsza;
+						if (check_minus == true)
+							wynik = druga - pierwsza;
+						else
+							wynik = pierwsza - druga;
 						akcja = "-";
 					}
 					if (array.at(i + 1) == "*")
@@ -241,7 +263,7 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 		}
 		else
 		{
-			if (array.at(i+1) == "(")
+			if (array.at(i+1)[0] == '(')
 			{
 				nawiasy(array, i + 1, aktualny_wynik);
 				i = -1;
@@ -272,7 +294,12 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 						i = mat(array, j, aktualny_wynik)[0] - 1;
 					}
 					else
-						wynik = pierwsza - wynik;
+					{
+						if (check_minus == true)
+							wynik -= pierwsza;
+						else
+							wynik = pierwsza - wynik;
+					}
 					akcja = "-";
 				}
 				if (array.at(i) == "*")
@@ -317,6 +344,7 @@ string* licz(string &wyrazenie, float &aktualny_wynik)
 
 void wylicz(string &wyrazenie, float &wynik, vector<string> &historia)
 {
+	check_minus = false;
 	string akcja = licz(wyrazenie, wynik)[1];
 	string wartosc = licz(wyrazenie, wynik)[0];
 	if (akcja == "+")
